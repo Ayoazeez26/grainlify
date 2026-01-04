@@ -11,12 +11,110 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/source"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/jagadeesh/grainlify/backend/migrations"
 )
+
+// NeedsMigration checks if migrations are needed by comparing the current database version
+// with available migrations. Returns true if migrations are needed, false otherwise.
+// This function queries the database directly to avoid acquiring locks.
+func NeedsMigration(ctx context.Context, pool *pgxpool.Pool) (bool, error) {
+	if pool == nil {
+		return false, fmt.Errorf("db pool is nil")
+	}
+
+	slog.Info("checking if migrations are needed")
+	
+	// Query the schema_migrations table directly to avoid lock acquisition
+	var currentVersion uint
+	var dirty bool
+	err := pool.QueryRow(ctx, `
+		SELECT version, dirty 
+		FROM schema_migrations 
+		LIMIT 1
+	`).Scan(&currentVersion, &dirty)
+	
+	if err != nil {
+		// If table doesn't exist (relation does not exist) or no rows, assume first-time migration needed
+		if err == pgx.ErrNoRows {
+			slog.Info("no migration version found, assuming first-time migration needed")
+			return true, nil
+		}
+		// Check if it's a "relation does not exist" error
+		errStr := strings.ToLower(err.Error())
+		if strings.Contains(errStr, "does not exist") || strings.Contains(errStr, "relation") {
+			slog.Info("schema_migrations table does not exist, assuming first-time migration needed")
+			return true, nil
+		}
+		// Other errors - log and assume migrations needed to be safe
+		slog.Warn("could not query schema_migrations table, assuming migrations needed", "error", err)
+		return true, nil
+	}
+
+	if dirty {
+		// Database is in dirty state - migrations are needed to fix it
+		slog.Warn("database is in dirty state, migrations needed", "version", currentVersion)
+		return true, nil
+	}
+
+	// Get the latest available migration version from source files
+	src, err := iofs.New(migrations.FS, ".")
+	if err != nil {
+		slog.Warn("could not load migration files, assuming migrations needed", "error", err)
+		return true, nil
+	}
+
+	latestVersion, err := getLatestMigrationVersion(src)
+	if err != nil {
+		slog.Warn("could not determine latest migration version, assuming migrations needed", "error", err)
+		return true, nil
+	}
+
+	needsMigration := currentVersion < latestVersion
+	if needsMigration {
+		slog.Info("migrations needed",
+			"current_version", currentVersion,
+			"latest_version", latestVersion,
+		)
+	} else {
+		slog.Info("migrations up to date",
+			"current_version", currentVersion,
+			"latest_version", latestVersion,
+		)
+	}
+
+	return needsMigration, nil
+}
+
+// getLatestMigrationVersion extracts the highest version number from migration files
+func getLatestMigrationVersion(src source.Driver) (uint, error) {
+	firstVersion, err := src.First()
+	if err != nil {
+		return 0, fmt.Errorf("get first migration: %w", err)
+	}
+
+	var latestVersion uint = firstVersion
+	currentVersion := firstVersion
+
+	for {
+		nextVersion, err := src.Next(currentVersion)
+		if err != nil {
+			// No more migrations
+			break
+		}
+		if nextVersion > latestVersion {
+			latestVersion = nextVersion
+		}
+		currentVersion = nextVersion
+	}
+
+	return latestVersion, nil
+}
 
 func Up(ctx context.Context, pool *pgxpool.Pool) error {
 	if pool == nil {

@@ -81,17 +81,32 @@ func main() {
 		}()
 
 		if cfg.AutoMigrate {
-			slog.Info("running database migrations", "step", "5", "action", "running_database_migrations")
-			// Use background context - migrations handle their own retries without timeouts
-			err := migrate.Up(context.Background(), database.Pool)
+			slog.Info("checking if migrations are needed", "step", "5", "action", "checking_migrations")
+			needsMigration, err := migrate.NeedsMigration(context.Background(), database.Pool)
 			if err != nil {
-				slog.Error("migration failed", "step", "5", "action", "migration_failed",
+				slog.Error("failed to check if migrations are needed", "step", "5", "action", "check_migration_failed",
 					"error", err,
 					"error_type", fmt.Sprintf("%T", err),
 				)
-				os.Exit(1)
+				// If we can't check, assume migrations are needed to be safe
+				needsMigration = true
 			}
-			slog.Info("migrations complete", "step", "5", "action", "migrations_complete")
+
+			if needsMigration {
+				slog.Info("migrations needed, running database migrations", "step", "5", "action", "running_database_migrations")
+				// Use background context - migrations handle their own retries without timeouts
+				err := migrate.Up(context.Background(), database.Pool)
+				if err != nil {
+					slog.Error("migration failed", "step", "5", "action", "migration_failed",
+						"error", err,
+						"error_type", fmt.Sprintf("%T", err),
+					)
+					os.Exit(1)
+				}
+				slog.Info("migrations complete", "step", "5", "action", "migrations_complete")
+			} else {
+				slog.Info("migrations up to date, skipping", "step", "5", "action", "migrations_skipped")
+			}
 		} else {
 			slog.Info("migrations skipped", "step", "5", "action", "migrations_skipped", "reason", "AUTO_MIGRATE=false")
 		}
