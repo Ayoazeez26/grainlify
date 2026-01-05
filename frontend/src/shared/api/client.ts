@@ -122,6 +122,19 @@ export const getCurrentUser = () =>
     };
   }>('/me', { requiresAuth: true });
 
+export const resyncGitHubProfile = () =>
+  apiRequest<{
+    github: {
+      login: string;
+      avatar_url: string;
+      name?: string;
+      email?: string;
+      location?: string;
+      bio?: string;
+      website?: string;
+    };
+  }>('/me/github/resync', { requiresAuth: true, method: 'POST' });
+
 export const getGitHubLoginUrl = () => {
   return `${API_BASE_URL}/auth/github/login/start`;
 };

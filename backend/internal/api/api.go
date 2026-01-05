@@ -120,6 +120,7 @@ func New(cfg config.Config, deps Deps) *fiber.App {
 	authHandler := handlers.NewAuthHandler(cfg, deps.DB)
 	authGroup := app.Group("/auth")
 	app.Get("/me", auth.RequireAuth(cfg.JWTSecret), authHandler.Me())
+	app.Post("/me/github/resync", auth.RequireAuth(cfg.JWTSecret), authHandler.ResyncGitHubProfile())
 
 	// User profile endpoints
 	userProfile := handlers.NewUserProfileHandler(cfg, deps.DB)

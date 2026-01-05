@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Github, User, Upload, Link as LinkIcon } from 'lucide-react';
 import { useTheme } from '../../../../shared/contexts/ThemeContext';
-import { getCurrentUser, updateProfile, updateAvatar } from '../../../../shared/api/client';
+import { getCurrentUser, updateProfile, updateAvatar, resyncGitHubProfile } from '../../../../shared/api/client';
 
 interface CurrentUser {
   id: string;
@@ -33,6 +33,7 @@ export function ProfileTab() {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isResyncing, setIsResyncing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form state
@@ -125,6 +126,34 @@ export function ProfileTab() {
     };
     fetchUser();
   }, []);
+
+  const handleResync = async () => {
+    setIsResyncing(true);
+    try {
+      const response = await resyncGitHubProfile();
+      if (response?.github) {
+        // Update current user state with fresh GitHub data
+        setCurrentUser(prev => prev ? {
+          ...prev,
+          github: {
+            ...prev.github,
+            ...response.github,
+          }
+        } : null);
+        alert('GitHub profile synced successfully!');
+      }
+    } catch (error) {
+      console.error('Failed to resync GitHub profile:', error);
+      alert('Failed to resync GitHub profile. Please try again.');
+    } finally {
+      setIsResyncing(false);
+    }
+  };
+
+  const handleEditGitHub = () => {
+    // Open GitHub settings page in a new tab
+    window.open('https://github.com/settings/profile', '_blank');
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -267,15 +296,22 @@ export function ProfileTab() {
             )}
           </span>
           <div className="flex items-center gap-3">
-            <button className={`px-5 py-2.5 rounded-[12px] backdrop-blur-[30px] border font-medium text-[14px] hover:bg-white/[0.25] transition-all flex items-center gap-2 ${
-              theme === 'dark'
-                ? 'bg-[#3d342c]/[0.5] border-white/20 text-[#d4c5b0]'
-                : 'bg-white/[0.2] border-white/30 text-[#2d2820]'
-            }`}>
+            <button 
+              onClick={handleResync}
+              disabled={isResyncing || !currentUser?.github}
+              className={`px-5 py-2.5 rounded-[12px] backdrop-blur-[30px] border font-medium text-[14px] hover:bg-white/[0.25] transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                theme === 'dark'
+                  ? 'bg-[#3d342c]/[0.5] border-white/20 text-[#d4c5b0]'
+                  : 'bg-white/[0.2] border-white/30 text-[#2d2820]'
+              }`}
+            >
               <Github className="w-4 h-4" />
-              Resync
+              {isResyncing ? 'Syncing...' : 'Resync'}
             </button>
-            <button className="px-5 py-2.5 rounded-[12px] bg-gradient-to-br from-[#c9983a] to-[#a67c2e] text-white font-medium text-[14px] shadow-[0_4px_16px_rgba(162,121,44,0.3)] hover:shadow-[0_6px_20px_rgba(162,121,44,0.4)] transition-all border border-white/10">
+            <button 
+              onClick={handleEditGitHub}
+              className="px-5 py-2.5 rounded-[12px] bg-gradient-to-br from-[#c9983a] to-[#a67c2e] text-white font-medium text-[14px] shadow-[0_4px_16px_rgba(162,121,44,0.3)] hover:shadow-[0_6px_20px_rgba(162,121,44,0.4)] transition-all border border-white/10"
+            >
               Edit
             </button>
           </div>

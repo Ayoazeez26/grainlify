@@ -184,7 +184,12 @@ WHERE id = $1
 				if ghUser.Name != "" {
 					githubMap["name"] = ghUser.Name
 				}
-				if ghUser.Email != "" {
+				// Try to get email from GitHub emails endpoint (more reliable)
+				email, err := gh.GetPrimaryEmail(c.Context(), linkedAccount.AccessToken)
+				if err == nil && email != "" {
+					githubMap["email"] = email
+				} else if ghUser.Email != "" {
+					// Fallback to email from /user endpoint
 					githubMap["email"] = ghUser.Email
 				}
 				// Use database location if set, otherwise use GitHub location
@@ -295,6 +300,80 @@ WHERE user_id = $1
 		}
 
 		return c.Status(fiber.StatusOK).JSON(response)
+	}
+}
+
+// ResyncGitHubProfile fetches fresh GitHub profile data including email
+func (h *AuthHandler) ResyncGitHubProfile() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		if h.db == nil || h.db.Pool == nil {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"error": "db_not_configured"})
+		}
+
+		userIDStr, _ := c.Locals(auth.LocalUserID).(string)
+		userID, err := uuid.Parse(userIDStr)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid_user"})
+		}
+
+		// Get GitHub access token
+		linkedAccount, err := github.GetLinkedAccount(c.Context(), h.db.Pool, userID, h.cfg.TokenEncKeyB64)
+		if err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "github_not_linked"})
+		}
+
+		// Fetch fresh GitHub user profile
+		gh := github.NewClient()
+		ghUser, err := gh.GetUser(c.Context(), linkedAccount.AccessToken)
+		if err != nil {
+			slog.Error("failed to fetch GitHub user", "error", err, "user_id", userID)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "github_fetch_failed"})
+		}
+
+		// Get primary email from GitHub
+		email, err := gh.GetPrimaryEmail(c.Context(), linkedAccount.AccessToken)
+		if err != nil {
+			slog.Warn("failed to fetch GitHub email", "error", err, "user_id", userID)
+			// Continue without email if email fetch fails
+		}
+
+		// Update github_accounts table with fresh data
+		_, err = h.db.Pool.Exec(c.Context(), `
+UPDATE github_accounts
+SET login = $1, avatar_url = $2, updated_at = now()
+WHERE user_id = $3
+`, ghUser.Login, ghUser.AvatarURL, userID)
+		if err != nil {
+			slog.Error("failed to update github_accounts", "error", err, "user_id", userID)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "update_failed"})
+		}
+
+		// Return fresh GitHub data
+		githubMap := fiber.Map{
+			"login":      ghUser.Login,
+			"avatar_url": ghUser.AvatarURL,
+		}
+		if ghUser.Name != "" {
+			githubMap["name"] = ghUser.Name
+		}
+		if email != "" {
+			githubMap["email"] = email
+		} else if ghUser.Email != "" {
+			githubMap["email"] = ghUser.Email
+		}
+		if ghUser.Location != "" {
+			githubMap["location"] = ghUser.Location
+		}
+		if ghUser.Bio != "" {
+			githubMap["bio"] = ghUser.Bio
+		}
+		if ghUser.Blog != "" {
+			githubMap["website"] = ghUser.Blog
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"github": githubMap,
+		})
 	}
 }
 

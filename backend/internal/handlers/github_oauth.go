@@ -56,10 +56,11 @@ VALUES ($1, $2, 'github_link', $3)
 
 		// Scopes:
 		// - read:user: link identity
+		// - user:email: access user email addresses
 		// - repo: access private repos + read repo metadata
 		// - admin:repo_hook: create webhooks
 		// - read:org: helps when dealing with org-owned repos
-		authURL, err := github.AuthorizeURL(h.cfg.GitHubOAuthClientID, effectiveGitHubRedirect(h.cfg), state, []string{"read:user", "repo", "admin:repo_hook", "read:org"})
+		authURL, err := github.AuthorizeURL(h.cfg.GitHubOAuthClientID, effectiveGitHubRedirect(h.cfg), state, []string{"read:user", "user:email", "repo", "admin:repo_hook", "read:org"})
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "auth_url_failed"})
 		}
@@ -89,8 +90,8 @@ VALUES ($1, NULL, 'github_login', $2)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "state_create_failed"})
 		}
 
-		// Login scopes: identity + repo access for later project verification.
-		authURL, err := github.AuthorizeURL(h.cfg.GitHubOAuthClientID, effectiveGitHubRedirect(h.cfg), state, []string{"read:user", "repo", "admin:repo_hook", "read:org"})
+		// Login scopes: identity + email + repo access for later project verification.
+		authURL, err := github.AuthorizeURL(h.cfg.GitHubOAuthClientID, effectiveGitHubRedirect(h.cfg), state, []string{"read:user", "user:email", "repo", "admin:repo_hook", "read:org"})
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "auth_url_failed"})
 		}
