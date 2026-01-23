@@ -10,20 +10,9 @@ interface FiltersSectionProps {
   showDropdown: boolean;
   onToggleDropdown: () => void;
   isLoaded: boolean;
+  ecosystems: string[];
+  isLoadingEcosystems?: boolean;
 }
-
-const ecosystems = [
-  'All Ecosystems',
-  'Web3',
-  'AI',
-  'Blockchain',
-  'Developer Tools',
-  'Cloud-Native',
-  'Security',
-  'Mobile',
-  'Data Science',
-  'Gaming',
-];
 
 export function FiltersSection({
   activeFilter,
@@ -33,6 +22,8 @@ export function FiltersSection({
   showDropdown,
   onToggleDropdown,
   isLoaded,
+  ecosystems,
+  isLoadingEcosystems = false,
 }: FiltersSectionProps) {
   const { theme } = useTheme();
 
@@ -87,23 +78,33 @@ export function FiltersSection({
             }`} />
           </button>
           {showDropdown && (
-            <div className="absolute right-0 mt-2 w-[200px] backdrop-blur-[40px] bg-white/[0.18] border-2 border-white/30 rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.15)] overflow-hidden z-[100] animate-dropdown-in">
-              {ecosystems.map((ecosystem, index) => (
-                <button
-                  key={ecosystem}
-                  onClick={() => {
-                    onEcosystemChange(ecosystem);
-                    onToggleDropdown();
-                  }}
-                  className={`w-full px-4 py-3 text-left text-[13px] font-medium transition-all ${
-                    index === 0
-                      ? `bg-white/[0.15] font-bold hover:bg-white/[0.25] ${theme === 'dark' ? 'text-[#f5f5f5]' : 'text-[#2d2820]'}`
-                      : `hover:bg-white/[0.2] ${theme === 'dark' ? 'text-[#f5f5f5]' : 'text-[#2d2820]'}`
-                  }`}
-                >
-                  {ecosystem}
-                </button>
-              ))}
+            <div className="absolute right-0 mt-2 w-[200px] backdrop-blur-[40px] bg-white/[0.18] border-2 border-white/30 rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.15)] overflow-hidden z-[100] animate-dropdown-in max-h-[300px] overflow-y-auto">
+              {isLoadingEcosystems ? (
+                <div className={`px-4 py-3 text-center text-[13px] ${theme === 'dark' ? 'text-[#d4d4d4]' : 'text-[#7a6b5a]'}`}>
+                  Loading ecosystems...
+                </div>
+              ) : ecosystems.length === 0 ? (
+                <div className={`px-4 py-3 text-center text-[13px] ${theme === 'dark' ? 'text-[#d4d4d4]' : 'text-[#7a6b5a]'}`}>
+                  No ecosystems available
+                </div>
+              ) : (
+                ecosystems.map((ecosystem, index) => (
+                  <button
+                    key={ecosystem}
+                    onClick={() => {
+                      onEcosystemChange(ecosystem);
+                      onToggleDropdown();
+                    }}
+                    className={`w-full px-4 py-3 text-left text-[13px] font-medium transition-all ${
+                      index === 0
+                        ? `bg-white/[0.15] font-bold hover:bg-white/[0.25] ${theme === 'dark' ? 'text-[#f5f5f5]' : 'text-[#2d2820]'}`
+                        : `hover:bg-white/[0.2] ${theme === 'dark' ? 'text-[#f5f5f5]' : 'text-[#2d2820]'}`
+                    }`}
+                  >
+                    {ecosystem}
+                  </button>
+                ))
+              )}
             </div>
           )}
         </div>
