@@ -4,6 +4,7 @@ import { ThemeProvider } from '../shared/contexts/ThemeContext';
 import { LandingPage } from '../features/landing';
 import { SignInPage, SignUpPage, AuthCallbackPage } from '../features/auth';
 import { Dashboard } from '../features/dashboard';
+import Toast from '../shared/components/Toast';
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -31,6 +32,7 @@ export default function App() {
               }
             />
           </Routes>
+          <Toast />
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>
