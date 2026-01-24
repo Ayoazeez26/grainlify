@@ -43,6 +43,7 @@ import {
 import { SkeletonLoader } from "../../../shared/components/SkeletonLoader";
 import { LanguageIcon } from "../../../shared/components/LanguageIcon";
 
+
 interface ProfileData {
   contributions_count: number;
   languages: Array<{ language: string; contribution_count: number }>;
@@ -451,7 +452,7 @@ export function ProfilePage({
       return; // Skip closed issues
     }
 
-    const month = activity.month_year || "Unknown";
+    const month = activity.month_year || 'Unknown';
     if (!contributionsByMonth[month]) {
       contributionsByMonth[month] = [];
     }
@@ -628,6 +629,17 @@ export function ProfilePage({
                 {/* Social Media Links - Show all icons, dimmed if no link */}
                 {!isLoadingProfile && (
                   <div className="flex items-center gap-3 flex-wrap mb-4">
+                    {/* GitHub */}
+                    <a
+                      href={`https://github.com/${viewingUser?.login || user?.github?.login
+                        }`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-full bg-gradient-to-br from-[#c9983a]/30 to-[#d4af37]/20 border-2 border-[#c9983a]/50 flex items-center justify-center hover:scale-110 hover:shadow-[0_4px_12px_rgba(201,152,58,0.4)] transition-all duration-300"
+                      title="GitHub"
+                    >
+                      <Github className="w-4 h-4 text-[#c9983a]" />
+                    </a>
                     {/* Telegram */}
                     {profileData?.telegram ? (
                       <a
@@ -1059,6 +1071,8 @@ export function ProfilePage({
             <h2
               className={`text-[20px] font-bold transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
                 }`}
+              className={`text-[20px] font-bold transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
+                }`}
             >
               Projects led / Most
             </h2>
@@ -1159,6 +1173,8 @@ export function ProfilePage({
                       <div
                         className={`flex items-center gap-1.5 group-hover/project:text-[#c9983a] transition-colors ${theme === "dark" ? "text-[#d4d4d4]" : "text-[#7a6b5a]"
                           }`}
+                        className={`flex items-center gap-1.5 group-hover/project:text-[#c9983a] transition-colors ${theme === "dark" ? "text-[#d4d4d4]" : "text-[#7a6b5a]"
+                          }`}
                       >
                         <Star className="w-5 h-5" />
                         <span>
@@ -1168,6 +1184,8 @@ export function ProfilePage({
                       <div
                         className={`flex items-center gap-1.5 group-hover/project:text-[#c9983a] transition-colors ${theme === "dark" ? "text-[#d4d4d4]" : "text-[#7a6b5a]"
                           }`}
+                        className={`flex items-center gap-1.5 group-hover/project:text-[#c9983a] transition-colors ${theme === "dark" ? "text-[#d4d4d4]" : "text-[#7a6b5a]"
+                          }`}
                       >
                         <Users className="w-5 h-5" />
                         <span>
@@ -1175,6 +1193,8 @@ export function ProfilePage({
                         </span>
                       </div>
                       <div
+                        className={`flex items-center gap-1.5 group-hover/project:text-[#c9983a] transition-colors ${theme === "dark" ? "text-[#d4d4d4]" : "text-[#7a6b5a]"
+                          }`}
                         className={`flex items-center gap-1.5 group-hover/project:text-[#c9983a] transition-colors ${theme === "dark" ? "text-[#d4d4d4]" : "text-[#7a6b5a]"
                           }`}
                       >
@@ -1258,10 +1278,14 @@ export function ProfilePage({
                   <p
                     className={`text-[14px] font-medium mb-1 transition-colors ${theme === "dark" ? "text-[#d4d4d4]" : "text-[#7a6b5a]"
                       }`}
+                    className={`text-[14px] font-medium mb-1 transition-colors ${theme === "dark" ? "text-[#d4d4d4]" : "text-[#7a6b5a]"
+                      }`}
                   >
                     No projects contributed yet
                   </p>
                   <p
+                    className={`text-[12px] transition-colors ${theme === "dark" ? "text-gray-500" : "text-gray-400"
+                      }`}
                     className={`text-[12px] transition-colors ${theme === "dark" ? "text-gray-500" : "text-gray-400"
                       }`}
                   >
@@ -1280,6 +1304,8 @@ export function ProfilePage({
             <div className="flex items-center gap-2 mb-5">
               <Code className="w-5 h-5 text-[#c9983a]" />
               <h2
+                className={`text-[16px] font-bold transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
+                  }`}
                 className={`text-[16px] font-bold transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
                   }`}
               >
@@ -1378,6 +1404,8 @@ export function ProfilePage({
             <div className="flex items-center gap-2 mb-5">
               <Globe className="w-5 h-5 text-[#c9983a]" />
               <h2
+                className={`text-[16px] font-bold transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
+                  }`}
                 className={`text-[16px] font-bold transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
                   }`}
               >
@@ -1479,6 +1507,8 @@ export function ProfilePage({
               <Trophy className="w-5 h-5 text-[#c9983a]" />
             </div>
             <h2
+              className={`text-[18px] font-bold transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
+                }`}
               className={`text-[18px] font-bold transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
                 }`}
             >
@@ -1608,12 +1638,16 @@ export function ProfilePage({
             <h2
               className={`text-[18px] font-bold transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
                 }`}
+              className={`text-[18px] font-bold transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
+                }`}
             >
               {isLoadingCalendar ? (
                 <SkeletonLoader variant="text" width="200px" height="32px" />
               ) : (
                 <>
                   <span
+                    className={`text-[32px] font-black transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
+                      }`}
                     className={`text-[32px] font-black transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
                       }`}
                   >
@@ -1623,6 +1657,8 @@ export function ProfilePage({
                     )}
                   </span>
                   <span
+                    className={`text-[16px] ml-2 transition-colors ${theme === "dark" ? "text-[#d4d4d4]" : "text-[#7a6b5a]"
+                      }`}
                     className={`text-[16px] ml-2 transition-colors ${theme === "dark" ? "text-[#d4d4d4]" : "text-[#7a6b5a]"
                       }`}
                   >
@@ -1644,6 +1680,8 @@ export function ProfilePage({
                     key={idx}
                     className={`text-[13px] font-bold transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
                       }`}
+                    className={`text-[13px] font-bold transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
+                      }`}
                   >
                     {month}
                   </div>
@@ -1658,11 +1696,15 @@ export function ProfilePage({
                 <div
                   className={`h-[14px] text-[12px] font-bold flex items-center transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
                     }`}
+                  className={`h-[14px] text-[12px] font-bold flex items-center transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
+                    }`}
                 >
                   Mon
                 </div>
                 <div className="h-[14px]" />
                 <div
+                  className={`h-[14px] text-[12px] font-bold flex items-center transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
+                    }`}
                   className={`h-[14px] text-[12px] font-bold flex items-center transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
                     }`}
                 >
@@ -1672,11 +1714,15 @@ export function ProfilePage({
                 <div
                   className={`h-[14px] text-[12px] font-bold flex items-center transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
                     }`}
+                  className={`h-[14px] text-[12px] font-bold flex items-center transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
+                    }`}
                 >
                   Fri
                 </div>
                 <div className="h-[14px]" />
                 <div
+                  className={`h-[14px] text-[12px] font-bold flex items-center transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
+                    }`}
                   className={`h-[14px] text-[12px] font-bold flex items-center transition-colors ${theme === "dark" ? "text-[#f5f5f5]" : "text-[#2d2820]"
                     }`}
                 >
@@ -1923,7 +1969,7 @@ export function ProfilePage({
 
                         return (
                           <div key={item.id} className="relative">
-                            {/* Vertical Line on Left */}
+                            {/* Vertical Line */}
                             {idx < items.length - 1 && (
                               <div className="absolute left-[20px] top-[36px] bottom-[-8px] w-[2px] bg-gradient-to-b from-white/25 to-white/8" />
                             )}
@@ -1956,63 +2002,62 @@ export function ProfilePage({
                                   />
                                 </div>
 
-                                {/* Number Badge */}
                                 <div
-                                  className={`px-3.5 py-1.5 rounded-[6px] ${iconBgColor} ${shadowColor}`}
+                                  className={`px-3.5 py-1.5 rounded-[6px] ${iconBgColor} ${iconOpacity}
+                                  shadow-[0_3px_10px_rgba(0,0,0,0.25)]`}
                                 >
                                   <span className="text-[14px] font-bold text-white">
                                     {item.number}
                                   </span>
                                 </div>
                               </div>
+                                )}
 
                               {/* Content */}
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <h4
-                                    className={`text-[15px] font-medium transition-colors ${theme === "dark"
-                                      ? "text-[#f5f5f5] group-hover/item:text-[#d4d4d4]"
-                                      : "text-[#2d2820] group-hover/item:text-[#4a3f2f]"
-                                      }`}
-                                  >
-                                    {labelPrefix}
-                                    {item.title}
-                                  </h4>
-                                  {/* State Badge (only for PRs) */}
-                                  {prStateBadge}
-                                </div>
-                                <p
-                                  className={`text-[13px] transition-colors ${theme === "dark"
-                                    ? "text-[#d4d4d4]/70"
-                                    : "text-[#7a6b5a]/70"
+                                <h4
+                                  className={`text-[15px] font-medium transition-colors ${theme === "dark"
+                                    ? "text-[#f5f5f5] group-hover/item:text-[#d4d4d4]"
+                                    : "text-[#2d2820] group-hover/item:text-[#4a3f2f]"
                                     }`}
                                 >
-                                  {item.project}
-                                </p>
+                                  {item.title}
+                                </h4>
+                                {/* State Badge (only for PRs) */}
+                                {prStateBadge}
                               </div>
-
-                              {/* Date */}
-                              <span
-                                className={`text-[13px] font-medium whitespace-nowrap flex-shrink-0 transition-colors ${theme === "dark"
-                                  ? "text-[#d4d4d4]"
-                                  : "text-[#7a6b5a]"
+                              <p
+                                className={`text-[13px] transition-colors ${theme === "dark"
+                                  ? "text-[#d4d4d4]/70"
+                                  : "text-[#7a6b5a]/70"
                                   }`}
                               >
-                                {item.date}
-                              </span>
+                                {item.project}
+                              </p>
                             </div>
+
+                            {/* Date */}
+                            <span
+                              className={`text-[13px] font-medium whitespace-nowrap flex-shrink-0 transition-colors ${theme === "dark"
+                                ? "text-[#d4d4d4]"
+                                : "text-[#7a6b5a]"
+                                }`}
+                            >
+                              {item.date}
+                            </span>
                           </div>
-                        );
+                          </div>
+                  );
                       })}
-                    </div>
-                  )}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+          ))}
         </div>
+          )}
       </div>
-      {/* ) */}
     </div>
+      {/* ) */ }
+    </div >
   );
 }

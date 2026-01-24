@@ -12,8 +12,6 @@ interface FiltersSectionProps {
   showDropdown: boolean;
   onToggleDropdown: () => void;
   isLoaded: boolean;
-  ecosystems: string[];
-  isLoadingEcosystems?: boolean;
 }
 
 interface EcosystemOption {
@@ -29,7 +27,6 @@ export function FiltersSection({
   showDropdown,
   onToggleDropdown,
   isLoaded,
-  isLoadingEcosystems = false,
 }: FiltersSectionProps) {
   const { theme } = useTheme();
 
