@@ -16,6 +16,8 @@ pub enum Error {
     FundsNotLocked = 5,
     DeadlineNotPassed = 6,
     Unauthorized = 7,
+    InvalidAmount = 8,
+    InvalidDeadline = 9,
 }
 
 #[contracttype]
@@ -76,6 +78,14 @@ impl BountyEscrowContract {
         deadline: u64,
     ) -> Result<(), Error> {
         depositor.require_auth();
+
+        if amount <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+
+        if deadline <= env.ledger().timestamp() {
+             return Err(Error::InvalidDeadline);
+        }
 
         if !env.storage().instance().has(&DataKey::Admin) {
             return Err(Error::NotInitialized);
