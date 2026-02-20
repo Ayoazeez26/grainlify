@@ -161,6 +161,6 @@ pub struct ClaimCancelled {
 }
 
 pub fn emit_pause_state_changed(env: &Env, event: crate::PauseStateChanged) {
-    let topics = (symbol_short!("pause"), event.operation);
+    let topics = (symbol_short!("pause"), event.operation.clone());
     env.events().publish(topics, event);
 }
