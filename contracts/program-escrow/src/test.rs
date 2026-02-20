@@ -2,7 +2,7 @@
 
 use super::*;
 use soroban_sdk::{
-    testutils::{Address as _, Events},
+    testutils::{Address as _, Events, Ledger},
     token, vec, Address, Env, String,
 };
 
@@ -240,4 +240,86 @@ fn test_gas_proxy_batch_vs_single_event_efficiency() {
     let batch_events = env_batch.events().all().len() - batch_before;
 
     assert!(batch_events <= single_events);
+}
+
+#[test]
+fn test_release_schedule_exact_timestamp_boundary() {
+    let env = Env::default();
+    let (client, _admin, token_client, _token_admin) = setup_program(&env, 100_000);
+    let recipient = Address::generate(&env);
+
+    let now = env.ledger().timestamp();
+    let schedule = client.create_program_release_schedule(&recipient, &25_000, &(now + 100));
+
+    env.ledger().set_timestamp(now + 100);
+    let released = client.trigger_program_releases();
+    assert_eq!(released, 1);
+
+    let schedules = client.get_program_release_schedules();
+    let updated = schedules.get(0).unwrap();
+    assert_eq!(updated.schedule_id, schedule.schedule_id);
+    assert!(updated.released);
+    assert_eq!(token_client.balance(&recipient), 25_000);
+}
+
+#[test]
+fn test_release_schedule_just_before_timestamp_rejected() {
+    let env = Env::default();
+    let (client, _admin, token_client, _token_admin) = setup_program(&env, 100_000);
+    let recipient = Address::generate(&env);
+
+    let now = env.ledger().timestamp();
+    client.create_program_release_schedule(&recipient, &20_000, &(now + 80));
+
+    env.ledger().set_timestamp(now + 79);
+    let released = client.trigger_program_releases();
+    assert_eq!(released, 0);
+    assert_eq!(token_client.balance(&recipient), 0);
+
+    let schedules = client.get_program_release_schedules();
+    assert!(!schedules.get(0).unwrap().released);
+}
+
+#[test]
+fn test_release_schedule_significantly_after_timestamp_releases() {
+    let env = Env::default();
+    let (client, _admin, token_client, _token_admin) = setup_program(&env, 100_000);
+    let recipient = Address::generate(&env);
+
+    let now = env.ledger().timestamp();
+    client.create_program_release_schedule(&recipient, &30_000, &(now + 60));
+
+    env.ledger().set_timestamp(now + 10_000);
+    let released = client.trigger_program_releases();
+    assert_eq!(released, 1);
+    assert_eq!(token_client.balance(&recipient), 30_000);
+}
+
+#[test]
+fn test_release_schedule_overlapping_schedules() {
+    let env = Env::default();
+    let (client, _admin, token_client, _token_admin) = setup_program(&env, 200_000);
+    let recipient1 = Address::generate(&env);
+    let recipient2 = Address::generate(&env);
+    let recipient3 = Address::generate(&env);
+
+    let now = env.ledger().timestamp();
+    client.create_program_release_schedule(&recipient1, &10_000, &(now + 50));
+    client.create_program_release_schedule(&recipient2, &15_000, &(now + 50)); // overlapping timestamp
+    client.create_program_release_schedule(&recipient3, &20_000, &(now + 120));
+
+    env.ledger().set_timestamp(now + 50);
+    let released_at_overlap = client.trigger_program_releases();
+    assert_eq!(released_at_overlap, 2);
+    assert_eq!(token_client.balance(&recipient1), 10_000);
+    assert_eq!(token_client.balance(&recipient2), 15_000);
+    assert_eq!(token_client.balance(&recipient3), 0);
+
+    env.ledger().set_timestamp(now + 120);
+    let released_later = client.trigger_program_releases();
+    assert_eq!(released_later, 1);
+    assert_eq!(token_client.balance(&recipient3), 20_000);
+
+    let history = client.get_program_release_history();
+    assert_eq!(history.len(), 3);
 }

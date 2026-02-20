@@ -261,6 +261,14 @@
                     "storage": [
                       {
                         "key": {
+                          "symbol": "NxtSched"
+                        },
+                        "val": {
+                          "u64": 1
+                        }
+                      },
+                      {
+                        "key": {
                           "symbol": "ProgData"
                         },
                         "val": {
@@ -631,6 +639,22 @@
                               }
                             }
                           ]
+                        }
+                      },
+                      {
+                        "key": {
+                          "symbol": "RelHist"
+                        },
+                        "val": {
+                          "vec": []
+                        }
+                      },
+                      {
+                        "key": {
+                          "symbol": "Scheds"
+                        },
+                        "val": {
+                          "vec": []
                         }
                       }
                     ]
