@@ -6,7 +6,7 @@ use soroban_sdk::{
     token, Address, Env,
 };
 
-//  local helpers 
+//  local helpers
 
 fn create_token(
     env: &Env,
@@ -221,7 +221,7 @@ fn test_query_by_amount_no_results_outside_range() {
     assert_eq!(results.len(), 0);
 }
 
-// deadline filter tests 
+// deadline filter tests
 
 #[test]
 fn test_query_by_deadline_range_filters_correctly() {
@@ -290,7 +290,7 @@ fn test_query_by_depositor_returns_empty_for_unknown_address() {
     assert_eq!(results.len(), 0);
 }
 
-// ── get_escrow_ids_by_status tests ───────────────────────────────────────────
+// get_escrow_ids_by_status tests
 
 #[test]
 fn test_get_escrow_ids_by_status_returns_correct_ids() {
@@ -329,7 +329,7 @@ fn test_get_escrow_ids_by_status_empty_when_no_match() {
     assert_eq!(ids.len(), 0);
 }
 
-// ── combined filter test (manual composition) ────────────────────────────────
+// combined filter test (manual composition)
 
 #[test]
 fn test_combined_status_and_amount_filter_via_manual_compose() {
@@ -360,7 +360,7 @@ fn test_combined_status_and_amount_filter_via_manual_compose() {
     assert_eq!(large_id, 3u64);
 }
 
-// ── aggregate stats test ──────────────────────────────────────────────────────
+// aggregate stats test
 
 #[test]
 fn test_aggregate_stats_reflects_correct_counts_after_lifecycle() {
